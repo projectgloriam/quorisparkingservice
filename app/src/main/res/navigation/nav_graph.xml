@@ -1,0 +1,134 @@
+<?xml version="1.0" encoding="utf-8"?>
+<navigation xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/nav_graph"
+    app:startDestination="@id/mapsFragment">
+    <fragment
+        android:id="@+id/mapsFragment"
+        android:name="com.projectgloriam.parkingservice.MapsFragment"
+        android:label="@string/welcome"
+        tools:layout="@layout/fragment_maps">
+        <action
+            android:id="@+id/action_mapsFragment_to_parkFragment"
+            app:destination="@id/parkFragment" />
+        <action
+            android:id="@+id/action_mapsFragment_to_userFragment"
+            app:destination="@id/userFragment" />
+        <action
+            android:id="@+id/action_mapsFragment_to_loginFragment"
+            app:destination="@id/loginFragment" />
+        <action
+            android:id="@+id/action_mapsFragment_to_ticketDetailsFragment"
+            app:destination="@id/ticketDetailsFragment" />
+    </fragment>
+
+    <fragment
+        android:id="@+id/parkFragment"
+        android:name="com.projectgloriam.parkingservice.ParkFragment"
+        android:label="@string/park_details"
+        tools:layout="@layout/fragment_park">
+        <action
+            android:id="@+id/action_parkFragment_to_mapsFragment"
+            app:destination="@id/mapsFragment" />
+        <action
+            android:id="@+id/action_parkFragment_to_ticketFragment"
+            app:destination="@id/ticketFragment" />
+        <action
+            android:id="@+id/action_parkFragment_to_loginFragment"
+            app:destination="@id/loginFragment" />
+        <argument
+            android:name="park"
+            app:argType="com.projectgloriam.parkingservice.Park" />
+        <action
+            android:id="@+id/action_parkFragment_to_paymentFragment"
+            app:destination="@id/paymentFragment" />
+        <action
+            android:id="@+id/action_parkFragment_to_ticketDetailsFragment"
+            app:destination="@id/ticketDetailsFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/userFragment"
+        android:name="com.projectgloriam.parkingservice.UserFragment"
+        android:label="@string/action_sign_up"
+        tools:layout="@layout/fragment_user">
+        <action
+            android:id="@+id/action_userFragment_to_mapsFragment"
+            app:destination="@id/mapsFragment" />
+        <action
+            android:id="@+id/action_userFragment_to_loginFragment"
+            app:destination="@id/loginFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/ticketFragment"
+        android:name="com.projectgloriam.parkingservice.TicketFragment"
+        android:label="@string/new_ticket_page"
+        tools:layout="@layout/fragment_ticket">
+        <argument
+            android:name="park"
+            app:argType="com.projectgloriam.parkingservice.Park" />
+        <action
+            android:id="@+id/action_ticketFragment_to_parkFragment"
+            app:destination="@id/parkFragment" />
+        <action
+            android:id="@+id/action_ticketFragment_to_ticketDetailsFragment"
+            app:destination="@id/ticketDetailsFragment" />
+        <action
+            android:id="@+id/action_ticketFragment_to_loginFragment"
+            app:destination="@id/loginFragment" />
+        <argument
+            android:name="url"
+            app:argType="string" />
+        <argument
+            android:name="orderCode"
+            app:argType="string" />
+        <argument
+            android:name="payToken"
+            app:argType="string" />
+    </fragment>
+    <fragment
+        android:id="@+id/ticketDetailsFragment"
+        android:name="com.projectgloriam.parkingservice.TicketDetailsFragment"
+        android:label="@string/ticket_details"
+        tools:layout="@layout/fragment_ticket_details">
+        <action
+            android:id="@+id/action_ticketDetailsFragment_to_mapsFragment"
+            app:destination="@id/mapsFragment" />
+        <argument
+            android:name="ticket"
+            app:argType="string" />
+        <action
+            android:id="@+id/action_ticketDetailsFragment_to_loginFragment"
+            app:destination="@id/loginFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/loginFragment"
+        android:name="com.projectgloriam.parkingservice.ui.login.LoginFragment"
+        android:label="@string/action_sign_in_short"
+        tools:layout="@layout/fragment_login">
+        <action
+            android:id="@+id/action_loginFragment_to_mapsFragment"
+            app:destination="@id/mapsFragment" />
+        <action
+            android:id="@+id/action_loginFragment_to_userFragment"
+            app:destination="@id/userFragment" />
+    </fragment>
+    <fragment
+        android:id="@+id/paymentFragment"
+        android:name="com.projectgloriam.parkingservice.PaymentFragment"
+        android:label="@string/payment_channel"
+        tools:layout="@layout/fragment_payment">
+        <action
+            android:id="@+id/action_paymentFragment_to_ticketFragment"
+            app:destination="@id/ticketFragment" />
+        <argument
+            android:name="park"
+            app:argType="com.projectgloriam.parkingservice.Park" />
+        <action
+            android:id="@+id/action_paymentFragment_to_ticketDetailsFragment"
+            app:destination="@id/ticketDetailsFragment"
+            app:popUpTo="@+id/paymentFragment"
+            app:popUpToInclusive="true"
+            />
+    </fragment>
+</navigation>
