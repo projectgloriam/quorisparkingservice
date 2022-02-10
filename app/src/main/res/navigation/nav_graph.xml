@@ -3,7 +3,7 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/nav_graph"
-    app:startDestination="@id/mapsFragment">
+    app:startDestination="@id/loginFragment">
     <fragment
         android:id="@+id/mapsFragment"
         android:name="com.projectgloriam.parkingservice.MapsFragment"
@@ -54,7 +54,9 @@
         tools:layout="@layout/fragment_user">
         <action
             android:id="@+id/action_userFragment_to_mapsFragment"
-            app:destination="@id/mapsFragment" />
+            app:destination="@id/mapsFragment"
+            app:popUpTo="@+id/userFragment"
+            app:popUpToInclusive="true"/>
         <action
             android:id="@+id/action_userFragment_to_loginFragment"
             app:destination="@id/loginFragment" />
@@ -108,7 +110,9 @@
         tools:layout="@layout/fragment_login">
         <action
             android:id="@+id/action_loginFragment_to_mapsFragment"
-            app:destination="@id/mapsFragment" />
+            app:destination="@id/mapsFragment"
+            app:popUpTo="@+id/loginFragment"
+            app:popUpToInclusive="true"/>
         <action
             android:id="@+id/action_loginFragment_to_userFragment"
             app:destination="@id/userFragment" />
@@ -131,4 +135,8 @@
             app:popUpToInclusive="true"
             />
     </fragment>
+    <fragment
+        android:id="@+id/settingsFragment"
+        android:name="com.projectgloriam.parkingservice.SettingsFragment"
+        android:label="SettingsFragment" />
 </navigation>

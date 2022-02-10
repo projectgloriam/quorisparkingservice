@@ -1,19 +1,28 @@
-package com.projectgloriam.parkingservice;
+package com.projectgloriam.parkingservice.model;
+
+import com.google.gson.annotations.Expose;
+import com.google.gson.annotations.SerializedName;
 
 public class User {
-    Integer id;
-    String first_name;
-    String last_name;
-    String email;
-    String phone;
+    @SerializedName("id")
+    @Expose
+    public Integer id;
 
-    public User(Integer id, String first_name, String last_name, String email, String phone) {
-        this.id = id;
-        this.first_name = first_name;
-        this.last_name = last_name;
-        this.email = email;
-        this.phone = phone;
-    }
+    @SerializedName("firstname")
+    @Expose
+    public String first_name;
+
+    @SerializedName("lastname")
+    @Expose
+    public String last_name;
+
+    @SerializedName("email")
+    @Expose
+    public String email;
+
+    @SerializedName("phone")
+    @Expose
+    public String phone;
 
     public Integer getId() {
         return id;

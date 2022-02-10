@@ -1,16 +1,21 @@
 package com.projectgloriam.parkingservice;
 
+import static android.content.Context.MODE_PRIVATE;
+
 import android.content.Context;
 import android.content.SharedPreferences;
 import android.preference.PreferenceManager;
 
 public class Session {
 
-    private SharedPreferences prefs;
+    public static SharedPreferences prefs;
+    private SharedPreferences.Editor editor;
+
 
     public Session(Context cntx, String userid, String email, String fullname) {
         // TODO Auto-generated constructor stub
-        prefs = PreferenceManager.getDefaultSharedPreferences(cntx);
+        prefs = cntx.getSharedPreferences(cntx.getString(R.string.root_preferences), cntx.MODE_PRIVATE);
+        editor = prefs.edit();
         setuserid(userid);
         setusername(email);
         setfullname(fullname);
@@ -18,7 +23,8 @@ public class Session {
 
     //User Id
     public void setuserid(String userid) {
-        prefs.edit().putString("userid", userid).commit();
+        editor.putString("userid", userid);
+        editor.commit();
     }
 
     public String getuserid() {
@@ -28,7 +34,8 @@ public class Session {
 
     //Email
     public void setusername(String username) {
-        prefs.edit().putString("username", username).commit();
+        editor.putString("username", username);
+        editor.apply();
     }
 
     public String getusername() {
@@ -38,7 +45,8 @@ public class Session {
 
     //Full name
     public void setfullname(String fullname) {
-        prefs.edit().putString("fullname", fullname).commit();
+        editor.putString("fullname", fullname);
+        editor.apply();
     }
 
     public String getfullname() {
@@ -54,8 +62,8 @@ public class Session {
     }
 
     public boolean close(){
-        prefs.edit().clear();
-        prefs.edit().commit();
+        editor.clear();
+        editor.commit();
         return true;
     }
 }

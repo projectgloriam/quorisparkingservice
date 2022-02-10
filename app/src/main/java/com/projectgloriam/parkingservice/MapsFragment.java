@@ -227,11 +227,11 @@ public class MapsFragment extends Fragment {
         super.onViewCreated(view, savedInstanceState);
 
         //Check if session is set else return to login
-        userModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
+        userModel = new ViewModelProvider((MainActivity) getActivity()).get(UserViewModel.class);
         userModel.getSession().observe(getViewLifecycleOwner(), session -> {
             // Perform an action with the latest session data
             if(session.isset()==false)
-                Navigation.findNavController(getActivity(), R.id.nav_host_fragment).navigate(R.id.action_ticketFragment_to_loginFragment);
+                Navigation.findNavController(getActivity(), R.id.nav_host_fragment).navigate(R.id.action_mapsFragment_to_loginFragment);
         });
 
         parkList = new ArrayList<>();

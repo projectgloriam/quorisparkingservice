@@ -183,7 +183,7 @@ public class PaymentFragment extends Fragment {
     }
 
     public void createTicket() {
-        apiClient.saveTicket(6, park.getId()).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+        apiClient.saveTicket(Integer.parseInt(userid), park.getId()).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Subscriber<Ticket>() {
                     @Override
                     public void onCompleted() {

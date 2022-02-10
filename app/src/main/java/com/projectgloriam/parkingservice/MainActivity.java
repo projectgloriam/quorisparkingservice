@@ -1,18 +1,22 @@
 package com.projectgloriam.parkingservice;
 
 
+import android.content.Context;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.drawerlayout.widget.DrawerLayout;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.navigation.NavController;
+import androidx.navigation.NavDestination;
 import androidx.navigation.Navigation;
 import androidx.navigation.ui.AppBarConfiguration;
 import androidx.navigation.ui.NavigationUI;
@@ -30,21 +34,23 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-public class MainActivity extends AppCompatActivity implements DrawerLocker, NavigationView.OnNavigationItemSelectedListener {
+public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
-    private DrawerLayout drawerLayout;
+    public DrawerLayout drawerLayout;
     private NavigationView navView;
-    private Toolbar app_bar;
-    AppBarConfiguration appBarConfiguration;
-    NavController navController;
-    ActionBarDrawerToggle toggle;
-    private UserViewModel userModel;
+    public Toolbar app_bar;
+    public AppBarConfiguration appBarConfiguration;
+    public NavController navController;
+    public ActionBarDrawerToggle toggle;
+    public UserViewModel userModel;
     private String userid;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        /**/
 
         initNavigationUI();
 
@@ -53,7 +59,6 @@ public class MainActivity extends AppCompatActivity implements DrawerLocker, Nav
             // Perform an action with the latest item data
             userid = session.getuserid();
         });
-
     }
 
     private void initNavigationUI() {
@@ -81,6 +86,26 @@ public class MainActivity extends AppCompatActivity implements DrawerLocker, Nav
 
         setupNavController();
 
+        navController.addOnDestinationChangedListener(new NavController.OnDestinationChangedListener() {
+            @Override
+            public void onDestinationChanged(@NonNull NavController navController, @NonNull NavDestination navDestination, @Nullable Bundle bundle) {
+                int lockMode;
+                if(navDestination.getId() == R.id.loginFragment || navDestination.getId() == R.id.userFragment || navDestination.getId() == R.id.mapsFragment) {
+                    app_bar.setVisibility(View.GONE);
+
+                    lockMode = DrawerLayout.LOCK_MODE_LOCKED_CLOSED;
+                    drawerLayout.setDrawerLockMode(lockMode);
+                    toggle.setDrawerIndicatorEnabled(false);
+                } else {
+                    app_bar.setVisibility(View.VISIBLE);
+
+                    lockMode = DrawerLayout.LOCK_MODE_UNLOCKED;
+                    drawerLayout.setDrawerLockMode(lockMode);
+                    toggle.setDrawerIndicatorEnabled(false);
+                }
+            }
+        });
+
     }
 
     private void setupNavController(){
@@ -89,38 +114,25 @@ public class MainActivity extends AppCompatActivity implements DrawerLocker, Nav
         NavigationUI.setupWithNavController(app_bar, navController, appBarConfiguration);
     }
 
-    public void setDrawerEnabled(boolean enabled) {
-        int lockMode = enabled ? DrawerLayout.LOCK_MODE_UNLOCKED :
-                DrawerLayout.LOCK_MODE_LOCKED_CLOSED;
-        drawerLayout.setDrawerLockMode(lockMode);
-        toggle.setDrawerIndicatorEnabled(enabled);
-
-        //TODO: Add the below code to any fragment that needs to disable drawer
-        //((DrawerLocker) getActivity()).setDrawerEnabled(false);
-    }
-
     @Override
     public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-        switch (menuItem.getItemId()) {
-
-            case R.id.settings: {
-                getSupportFragmentManager()
-                        .beginTransaction()
-                        .replace(R.id.nav_host_fragment, new SettingsFragment())
-                        .commit();
-                break;
-            }
-            case R.id.park_list:{
-                setupNavController();
-                break;
-            }
-            case R.id.logout:{
-                logout();
-                break;
-            }
+        if(menuItem.getTitle().toString()==getResources().getString(R.string.logout)){
+            logout();
         }
 
         return false;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
+
+        if(item.getTitle().toString()==getResources().getString(R.string.logout)){
+            logout();
+        }
+
+        return NavigationUI.onNavDestinationSelected(item, navController)
+                || super.onOptionsItemSelected(item);
     }
 
     public  void logout(){
@@ -129,6 +141,8 @@ public class MainActivity extends AppCompatActivity implements DrawerLocker, Nav
         // Perform an action with the latest item data
             session.close();
         });
+
+
     }
 
 }

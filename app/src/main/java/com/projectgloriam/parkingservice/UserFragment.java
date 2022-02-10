@@ -1,5 +1,7 @@
 package com.projectgloriam.parkingservice;
 
+import static android.content.ContentValues.TAG;
+
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -16,17 +18,27 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
 
+import com.projectgloriam.parkingservice.model.Ticket;
+import com.projectgloriam.parkingservice.model.User;
+import com.projectgloriam.parkingservice.network.APIUtils;
+import com.projectgloriam.parkingservice.network.ApiInterface;
+
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
+
+import rx.Subscriber;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -45,9 +57,11 @@ public class UserFragment extends Fragment {
     private String mParam2;
     private UserViewModel userModel;
 
-    private EditText firstname, lastname, phone, email, password;
+    private EditText firstname, lastname, phone, email, password, confirm_password;
     private Button register;
     private Button signUpRedirectButton;
+
+    private ApiInterface apiClient;
 
     public UserFragment() {
         // Required empty public constructor
@@ -90,10 +104,8 @@ public class UserFragment extends Fragment {
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        apiClient = APIUtils.getAPIService();
         userModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
-
-        //Disable drawer layout
-        ((DrawerLocker) getActivity()).setDrawerEnabled(false);
 
         // initializing all variables.
         firstname = view.findViewById(R.id.firstname);
@@ -101,6 +113,7 @@ public class UserFragment extends Fragment {
         phone = view.findViewById(R.id.phone);
         email = view.findViewById(R.id.email);
         password = view.findViewById(R.id.password);
+        confirm_password = view.findViewById(R.id.confirm_password);
         register = view.findViewById(R.id.register);
         signUpRedirectButton = view.findViewById(R.id.login_redirect_button);
 
@@ -117,90 +130,59 @@ public class UserFragment extends Fragment {
             @Override
             public void onClick(View v)
             {
-                if (firstname.getText().toString().matches("") || lastname.getText().toString().matches("") || phone.getText().toString().matches("") || email.getText().toString().matches("") || password.getText().toString().matches("") ) {
+                //Check empty fields
+                if (firstname.getText().toString().matches("") || lastname.getText().toString().matches("") || phone.getText().toString().matches("") || email.getText().toString().matches("") || password.getText().toString().matches("") || confirm_password.getText().toString().matches("") ) {
                     Toast.makeText(getActivity(), "Please don't leave any field blank", Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                //Checking password length is 5 or more
+                if (password.getText().length() < 5 || confirm_password.getText().length() < 5 ) {
+                    Toast.makeText(getActivity(), R.string.invalid_password, Toast.LENGTH_SHORT).show();
+                    return;
+                }
+
+                if ( !password.getText().toString().equals(confirm_password.getText().toString()) ) {
+                    Toast.makeText(getActivity(), "Passwords don't match", Toast.LENGTH_SHORT).show();
                     return;
                 }
 
                 //Register user via POST request to server
                 registerUser();
 
-                //Navigate to Maps
-                Navigation.findNavController(getActivity(), R.id.nav_host_fragment).navigate(R.id.action_userFragment_to_mapsFragment);
+
             }
         });
 
 
     }
 
-    private void registerUser(){
-        try {
-            //create a URL object
-            URL url = new URL("http://quorissolutions.com/users.php");
+    public void registerUser() {
+        apiClient.saveUser(firstname.getText().toString(), lastname.getText().toString(), email.getText().toString(),password.getText().toString(),phone.getText().toString()).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Subscriber<User>() {
+                    @Override
+                    public void onCompleted() {
 
-            try {
-                HttpURLConnection con = (HttpURLConnection)url.openConnection();
-
-                //set the request method property to POST
-                con.setRequestMethod("POST");
-
-                //send the request content in JSON form
-                con.setRequestProperty("Content-Type", "application/json; utf-8");
-
-                //Set the “Accept” request header to “application/json” to read the response in the desired format
-                con.setRequestProperty("Accept", "application/json");
-
-                con.setDoOutput(true);
-
-                String jsonInputString = "{'firstname': '" + firstname + "', 'lastname': '" + lastname + "', 'phone': '" + phone + "', 'email': '" + email + "', 'password': '" + password + "'}";
-
-                try(OutputStream os = con.getOutputStream()) {
-                    byte[] input = jsonInputString.getBytes("utf-8");
-                    os.write(input, 0, input.length);
-                } catch (IOException e) {
-                    //e.printStackTrace();
-                    Log.e("Connection error", e.toString());
-                    Toast.makeText(getContext().getApplicationContext(), "Connection error", Toast.LENGTH_LONG).show();
-                }
-
-                try(BufferedReader br = new BufferedReader(
-                        new InputStreamReader(con.getInputStream(), "utf-8"))) {
-                    StringBuilder response = new StringBuilder();
-                    String responseLine = null;
-                    while ((responseLine = br.readLine()) != null) {
-                        response.append(responseLine.trim());
                     }
-                    String jsonString = response.toString();
-                    if(jsonString!=null) {
-                        JSONArray jsonArray = new JSONArray(jsonString);
 
-                        JSONObject jsonresponse = (JSONObject) jsonArray.get(0);
-                        String id = jsonresponse.getString("id");
-                        String firstName = jsonresponse.getString("firstname");
-                        String lastName = jsonresponse.getString("lastname");
-                        String email = jsonresponse.getString("email");
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.e(TAG, "Unable to register user to API: " + e.toString());
 
-                        //Setting user preferences or sessions
-                        userModel.setSession(new Session(getContext(), id, email, firstName+" "+lastName));
+                        Toast.makeText(getContext(), "An error has occurred. Please try again.", Toast.LENGTH_SHORT).show();
                     }
-                } catch (IOException e) {
-                    //e.printStackTrace();
-                    Log.e("Connection error", e.toString());
-                    Toast.makeText(getContext().getApplicationContext(), "Connection error", Toast.LENGTH_LONG).show();
-                } catch (JSONException e) {
-                    e.printStackTrace();
-                }
 
-            } catch (IOException e) {
-                //e.printStackTrace();
-                Log.e("Connection error", e.toString());
-                Toast.makeText(getContext().getApplicationContext(), "Connection error", Toast.LENGTH_LONG).show();
-            }
+                    @Override
+                    public void onNext(User user) {
+                        showResponse(user);
+                    }
+                });
+    }
 
-        } catch (MalformedURLException e) {
-            //e.printStackTrace();
-            Log.e("Connection error", e.toString());
-            Toast.makeText(getContext().getApplicationContext(), "Connection error", Toast.LENGTH_LONG).show();
-        }
+    public void showResponse(User response) {
+        //Setting user preferences or sessions
+        userModel.setSession(new Session(getContext(), response.getId().toString(), response.getEmail(), response.getFirst_name()+" "+response.getLast_name()));
+        //Navigate to Maps
+        Navigation.findNavController(getActivity(), R.id.nav_host_fragment).navigate(R.id.action_userFragment_to_mapsFragment);
     }
 }

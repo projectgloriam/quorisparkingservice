@@ -1,5 +1,7 @@
 package com.projectgloriam.parkingservice.ui.login;
 
+import static android.content.ContentValues.TAG;
+
 import androidx.lifecycle.Observer;
 import androidx.lifecycle.ViewModelProvider;
 import androidx.annotation.NonNull;
@@ -14,6 +16,7 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.Editable;
 import android.text.TextWatcher;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -32,6 +35,15 @@ import com.projectgloriam.parkingservice.UserViewModel;
 import com.projectgloriam.parkingservice.databinding.FragmentLoginBinding;
 
 import com.projectgloriam.parkingservice.R;
+import com.projectgloriam.parkingservice.model.User;
+import com.projectgloriam.parkingservice.network.APIUtils;
+import com.projectgloriam.parkingservice.network.ApiInterface;
+
+import java.util.Objects;
+
+import rx.Subscriber;
+import rx.android.schedulers.AndroidSchedulers;
+import rx.schedulers.Schedulers;
 
 public class LoginFragment extends Fragment {
 
@@ -41,6 +53,7 @@ public class LoginFragment extends Fragment {
     public static final String Id = "IdKey";
     public static final String Name = "nameKey";
     public static final String Email = "emailKey";
+    private ApiInterface apiClient;
     private UserViewModel userModel;
 
     @Nullable
@@ -58,10 +71,9 @@ public class LoginFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
-        userModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
+        apiClient = APIUtils.getAPIService();
 
-        //Disable drawer layout
-        ((DrawerLocker) getActivity()).setDrawerEnabled(false);
+        userModel = new ViewModelProvider(requireActivity()).get(UserViewModel.class);
 
         loginViewModel = new ViewModelProvider(this, new LoginViewModelFactory())
                 .get(LoginViewModel.class);
@@ -96,7 +108,7 @@ public class LoginFragment extends Fragment {
             }
         });
 
-        loginViewModel.getLoginResult().observe(getViewLifecycleOwner(), new Observer<LoginResult>() {
+        /*loginViewModel.getLoginResult().observe(getViewLifecycleOwner(), new Observer<LoginResult>() {
             @Override
             public void onChanged(@Nullable LoginResult loginResult) {
                 if (loginResult == null) {
@@ -110,7 +122,7 @@ public class LoginFragment extends Fragment {
                     updateUiWithUser(loginResult.getSuccess());
                 }
             }
-        });
+        });*/
 
         TextWatcher afterTextChangedListener = new TextWatcher() {
             @Override
@@ -136,8 +148,7 @@ public class LoginFragment extends Fragment {
             @Override
             public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
                 if (actionId == EditorInfo.IME_ACTION_DONE) {
-                    loginViewModel.login(usernameEditText.getText().toString(),
-                            passwordEditText.getText().toString());
+                    authenticateUser(usernameEditText.getText().toString(),passwordEditText.getText().toString());
                 }
                 return false;
             }
@@ -147,21 +158,45 @@ public class LoginFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 loadingProgressBar.setVisibility(View.VISIBLE);
-                loginViewModel.login(usernameEditText.getText().toString(),
-                        passwordEditText.getText().toString());
+                //loginViewModel.login(usernameEditText.getText().toString(),passwordEditText.getText().toString());
+                authenticateUser(usernameEditText.getText().toString(),passwordEditText.getText().toString());
             }
         });
     }
 
-    private void updateUiWithUser(LoggedInUserView model) {
-        String welcome = getString(R.string.welcome) + model.getDisplayName();
+    private void authenticateUser(String email, String password) {
+        apiClient.authUser(email,password).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+                .subscribe(new Subscriber<User>() {
+                    @Override
+                    public void onCompleted() {
+
+                    }
+
+                    @Override
+                    public void onError(Throwable e) {
+                        Log.e(TAG, "User authentication to API unsuccessful: " + e.toString());
+                        if (getContext() != null && getContext().getApplicationContext() != null) {
+                            Toast.makeText(getContext().getApplicationContext(), "User login failed. Please try again.", Toast.LENGTH_LONG).show();
+                        }
+                    }
+
+                    @Override
+                    public void onNext(User user) {
+                        updateUiWithUser(user);
+                    }
+                });
+    }
+
+    private void updateUiWithUser(User user) {
+        String fullName = user.getFirst_name() + " " + user.getLast_name();
+        String welcome = getString(R.string.welcome) + " " + fullName;
         // TODO : initiate successful logged in experience
         if (getContext() != null && getContext().getApplicationContext() != null) {
             Toast.makeText(getContext().getApplicationContext(), welcome, Toast.LENGTH_LONG).show();
         }
 
         //Setting user preferences or sessions
-        userModel.setSession(new Session(getContext(), model.getId(), model.getEmail(), model.getDisplayName()));
+        userModel.setSession(new Session(getContext(), user.getId().toString(), user.getEmail(), fullName));
 
         //Navigate to Maps Fragment
         Navigation.findNavController(getActivity(), R.id.nav_host_fragment).navigate(R.id.action_loginFragment_to_mapsFragment);
