@@ -1,9 +1,18 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:showIn="nav">
 
     <item
         android:id="@+id/mapsFragment"
         android:title="@string/park_list" />
+    <item
+        android:id="@+id/ticketDetailsFragment"
+        android:title="@string/my_ticket" />
+    <item
+        android:id="@+id/ticketHistoryFragment"
+        android:title="@string/ticket_history" />
     <item
         android:id="@+id/settingsFragment"
         android:title="@string/settings" />

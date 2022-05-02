@@ -1,5 +1,8 @@
 package com.projectgloriam.parkingservice.model;
 
+import android.os.Parcel;
+import android.os.Parcelable;
+
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 
@@ -7,7 +10,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
 
-public class Ticket {
+public class Ticket implements Parcelable {
     @SerializedName("id")
     @Expose
     public Integer id;
@@ -39,6 +42,44 @@ public class Ticket {
     @SerializedName("status")
     @Expose
     public Boolean status;
+
+    protected Ticket(Parcel in) {
+        if (in.readByte() == 0) {
+            id = null;
+        } else {
+            id = in.readInt();
+        }
+        code = in.readString();
+        if (in.readByte() == 0) {
+            rate_unit = null;
+        } else {
+            rate_unit = in.readDouble();
+        }
+        if (in.readByte() == 0) {
+            user_id = null;
+        } else {
+            user_id = in.readInt();
+        }
+        if (in.readByte() == 0) {
+            park_id = null;
+        } else {
+            park_id = in.readInt();
+        }
+        byte tmpStatus = in.readByte();
+        status = tmpStatus == 0 ? null : tmpStatus == 1;
+    }
+
+    public static final Creator<Ticket> CREATOR = new Creator<Ticket>() {
+        @Override
+        public Ticket createFromParcel(Parcel in) {
+            return new Ticket(in);
+        }
+
+        @Override
+        public Ticket[] newArray(int size) {
+            return new Ticket[size];
+        }
+    };
 
     public Integer getId() {
         return id;
@@ -127,6 +168,38 @@ public class Ticket {
     }
 
 
+    @Override
+    public int describeContents() {
+        return 0;
+    }
 
-
+    @Override
+    public void writeToParcel(Parcel dest, int flags) {
+        if (id == null) {
+            dest.writeByte((byte) 0);
+        } else {
+            dest.writeByte((byte) 1);
+            dest.writeInt(id);
+        }
+        dest.writeString(code);
+        if (rate_unit == null) {
+            dest.writeByte((byte) 0);
+        } else {
+            dest.writeByte((byte) 1);
+            dest.writeDouble(rate_unit);
+        }
+        if (user_id == null) {
+            dest.writeByte((byte) 0);
+        } else {
+            dest.writeByte((byte) 1);
+            dest.writeInt(user_id);
+        }
+        if (park_id == null) {
+            dest.writeByte((byte) 0);
+        } else {
+            dest.writeByte((byte) 1);
+            dest.writeInt(park_id);
+        }
+        dest.writeByte((byte) (status == null ? 0 : status ? 1 : 2));
+    }
 }

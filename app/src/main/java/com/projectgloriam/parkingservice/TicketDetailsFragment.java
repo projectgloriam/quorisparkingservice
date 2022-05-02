@@ -3,8 +3,10 @@ package com.projectgloriam.parkingservice;
 import static android.content.ContentValues.TAG;
 import static android.content.Context.WINDOW_SERVICE;
 
+import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Point;
+import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.activity.OnBackPressedCallback;
@@ -57,8 +59,8 @@ public class TicketDetailsFragment extends Fragment {
     // TODO: Rename and change types of parameters
     private String mParam1;
     private String mParam2;
-
-    String ticket, userid;
+    Ticket ticket;
+    String userid;
 
     // variables for imageview, edittext,
     // button, bitmap and qrencoder.
@@ -70,6 +72,8 @@ public class TicketDetailsFragment extends Fragment {
     private ApiInterface apiClient;
 
     private UserViewModel userModel;
+
+    private OnFragmentInteractionListener mListener;
 
     public TicketDetailsFragment() {
         // Required empty public constructor
@@ -120,30 +124,36 @@ public class TicketDetailsFragment extends Fragment {
         userModel.getSession().observe(getViewLifecycleOwner(), session -> {
             // Perform an action with the latest session data
             if(session.isset()==false)
-                Navigation.findNavController(getActivity(), R.id.nav_host_fragment).navigate(R.id.action_ticketFragment_to_loginFragment);
+                Navigation.findNavController(getActivity(), R.id.nav_host_fragment).navigate(R.id.action_ticketDetailsFragment_to_loginFragment);
 
             //Fetch user id from session
             userid = session.getuserid();
+
+            // initializing all variables.
+            qrCodeIV = view.findViewById(R.id.idIVQrcode);
+            clock_in = view.findViewById(R.id.clock_in);
+            clock_out = view.findViewById(R.id.clock_out);
+
+            Toast.makeText(getActivity(),
+                    "Fetching ticket details",
+                    Toast.LENGTH_LONG).show();
+
+
+            if (getArguments().getParcelable("ticket") != null) {
+                //Fetching ticket from previous fragment
+                ticket = TicketDetailsFragmentArgs.fromBundle(getArguments()).getTicket();
+                showResponse(ticket);
+            } else {
+                //Fetching ticket details from server
+                fetchTicket();
+            }
         });
 
-        //Fetching ticket from previous fragment
-        ticket = TicketDetailsFragmentArgs.fromBundle(getArguments()).getTicket();
 
-        // initializing all variables.
-        qrCodeIV = view.findViewById(R.id.idIVQrcode);
-        clock_in = view.findViewById(R.id.clock_in);
-        clock_out = view.findViewById(R.id.clock_out);
-
-        Toast.makeText(getActivity(),
-                "Fetching ticket details",
-                Toast.LENGTH_LONG).show();
-
-        //Fetching ticket details from server
-        fetchTicket();
     }
 
     private void fetchTicket(){
-        apiClient.getTicket(6).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
+        apiClient.getTicket(Integer.parseInt(userid)).subscribeOn(Schedulers.io()).observeOn(AndroidSchedulers.mainThread())
                 .subscribe(new Subscriber<Ticket>() {
                     @Override
                     public void onCompleted() {
@@ -162,15 +172,14 @@ public class TicketDetailsFragment extends Fragment {
                     }
 
                     @Override
-                    public void onNext(Ticket ticket) {
-                        showResponse(ticket);
+                    public void onNext(Ticket t) {
+                        showResponse(t);
                         Log.i(TAG, "Ticket details requested.");
                     }
                 });
     }
 
     public void showResponse(Ticket response) {
-        ticket = response.getCode();
         String clockInText, clockOutText;
 
         //Setting clock in and out text view
@@ -212,7 +221,7 @@ public class TicketDetailsFragment extends Fragment {
 
         // setting this dimensions inside our qr code
         // encoder to generate our qr code.
-        qrgEncoder = new QRGEncoder(ticket, null, QRGContents.Type.TEXT, dimen);
+        qrgEncoder = new QRGEncoder(response.getCode(), null, QRGContents.Type.TEXT, dimen);
         try {
             // getting our qrcode in the form of bitmap.
             bitmap = qrgEncoder.encodeAsBitmap();
@@ -226,4 +235,35 @@ public class TicketDetailsFragment extends Fragment {
         }
     }
 
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof OnFragmentInteractionListener) {
+            mListener = (OnFragmentInteractionListener) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " must implement OnFragmentInteractionListener");
+        }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mListener = null;
+    }
+
+    /**
+     * This interface must be implemented by activities that contain this
+     * fragment to allow an interaction in this fragment to be communicated
+     * to the activity and potentially other fragments contained in that
+     * activity.
+     * <p>
+     * See the Android Training lesson <a href=
+     * "http://developer.android.com/training/basics/fragments/communicating.html"
+     * >Communicating with Other Fragments</a> for more information.
+     */
+    public interface OnFragmentInteractionListener {
+        // TODO: Update argument type and name
+        void onFragmentInteraction(Uri uri);
+    }
 }

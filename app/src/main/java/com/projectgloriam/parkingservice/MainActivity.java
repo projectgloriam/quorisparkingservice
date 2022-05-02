@@ -2,8 +2,10 @@ package com.projectgloriam.parkingservice;
 
 
 import android.content.Context;
+import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
@@ -34,7 +36,11 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
-public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
+public class MainActivity extends AppCompatActivity implements
+        MapsFragment.OnFragmentInteractionListener,
+        ParkFragment.OnFragmentInteractionListener,
+        PaymentFragment.OnFragmentInteractionListener,
+        TicketDetailsFragment.OnFragmentInteractionListener{
 
     public DrawerLayout drawerLayout;
     private NavigationView navView;
@@ -84,7 +90,29 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         //adding navigation view of the drawer to navigation UI
         navView = findViewById(R.id.nav_view);
 
-        setupNavController();
+        navView.setNavigationItemSelectedListener( item -> {
+            switch (item.getItemId()) {
+
+                case R.id.logout: {
+                    logout();
+                    break;
+                }
+
+                default: {
+                    // Fallback for all other (normal) cases.
+                    boolean handled = NavigationUI.onNavDestinationSelected(item, navController);
+
+                    // This is usually done by the default ItemSelectedListener.
+                    // But there can only be one! Unfortunately.
+                    if (handled) drawerLayout.closeDrawer(navView);
+
+                    // return the result of NavigationUI call
+                    return handled;
+                }
+            }
+
+            return false;
+        });
 
         navController.addOnDestinationChangedListener(new NavController.OnDestinationChangedListener() {
             @Override
@@ -101,38 +129,14 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
 
                     lockMode = DrawerLayout.LOCK_MODE_UNLOCKED;
                     drawerLayout.setDrawerLockMode(lockMode);
-                    toggle.setDrawerIndicatorEnabled(false);
+                    toggle.setDrawerIndicatorEnabled(true);
                 }
             }
         });
 
-    }
-
-    private void setupNavController(){
-
         //setup Navigation View with Navigation UI
         NavigationUI.setupWithNavController(app_bar, navController, appBarConfiguration);
-    }
 
-    @Override
-    public boolean onNavigationItemSelected(@NonNull MenuItem menuItem) {
-        if(menuItem.getTitle().toString()==getResources().getString(R.string.logout)){
-            logout();
-        }
-
-        return false;
-    }
-
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        NavController navController = Navigation.findNavController(this, R.id.nav_host_fragment);
-
-        if(item.getTitle().toString()==getResources().getString(R.string.logout)){
-            logout();
-        }
-
-        return NavigationUI.onNavDestinationSelected(item, navController)
-                || super.onOptionsItemSelected(item);
     }
 
     public  void logout(){
@@ -142,7 +146,10 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             session.close();
         });
 
-
     }
 
+    @Override
+    public void onFragmentInteraction(Uri uri) {
+
+    }
 }

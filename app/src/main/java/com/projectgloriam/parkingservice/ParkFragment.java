@@ -1,6 +1,8 @@
 package com.projectgloriam.parkingservice;
 
 import android.app.ProgressDialog;
+import android.content.Context;
+import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -64,6 +66,7 @@ public class ParkFragment extends Fragment {
     private ApiInterface apiClient;
     private String userid;
     private TextView rate;
+    private OnFragmentInteractionListener mListener;
 
     public ParkFragment() {
         // Required empty public constructor
@@ -114,7 +117,7 @@ public class ParkFragment extends Fragment {
         userModel.getSession().observe(getViewLifecycleOwner(), session -> {
             // Perform an action with the latest session data
             if(session.isset()==false)
-                Navigation.findNavController(getActivity(), R.id.nav_host_fragment).navigate(R.id.action_ticketFragment_to_loginFragment);
+                Navigation.findNavController(getActivity(), R.id.nav_host_fragment).navigate(R.id.action_parkFragment_to_loginFragment);
 
             userid = session.getuserid();
         });
@@ -175,6 +178,38 @@ public class ParkFragment extends Fragment {
         Toast.makeText(getActivity(),
                 "There are "+total_spots.toString()+" spots. "+available_spots.toString()+" spots are available.",
                 Toast.LENGTH_LONG).show();
+    }
+
+    @Override
+    public void onAttach(Context context) {
+        super.onAttach(context);
+        if (context instanceof OnFragmentInteractionListener) {
+            mListener = (OnFragmentInteractionListener) context;
+        } else {
+            throw new RuntimeException(context.toString()
+                    + " must implement OnFragmentInteractionListener");
+        }
+    }
+
+    @Override
+    public void onDetach() {
+        super.onDetach();
+        mListener = null;
+    }
+
+    /**
+     * This interface must be implemented by activities that contain this
+     * fragment to allow an interaction in this fragment to be communicated
+     * to the activity and potentially other fragments contained in that
+     * activity.
+     * <p>
+     * See the Android Training lesson <a href=
+     * "http://developer.android.com/training/basics/fragments/communicating.html"
+     * >Communicating with Other Fragments</a> for more information.
+     */
+    public interface OnFragmentInteractionListener {
+        // TODO: Update argument type and name
+        void onFragmentInteraction(Uri uri);
     }
 
     //Fetch list of parks

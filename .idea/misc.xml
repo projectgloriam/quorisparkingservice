@@ -4,11 +4,13 @@
     <option name="filePathToZoomLevelMap">
       <map>
         <entry key="..\:/Users/fritz/Android/ParkingService/app/src/main/res/layout/activity_main.xml" value="0.17798913043478262" />
+        <entry key="..\:/Users/fritz/Android/ParkingService/app/src/main/res/layout/drawer_header.xml" value="0.11865942028985507" />
         <entry key="..\:/Users/fritz/Android/ParkingService/app/src/main/res/layout/fragment_login.xml" value="0.17798913043478262" />
         <entry key="..\:/Users/fritz/Android/ParkingService/app/src/main/res/layout/fragment_park.xml" value="0.1" />
         <entry key="..\:/Users/fritz/Android/ParkingService/app/src/main/res/layout/fragment_payment.xml" value="0.17617753623188406" />
         <entry key="..\:/Users/fritz/Android/ParkingService/app/src/main/res/layout/fragment_ticket.xml" value="0.264" />
         <entry key="..\:/Users/fritz/Android/ParkingService/app/src/main/res/layout/fragment_ticket_details.xml" value="0.17798913043478262" />
+        <entry key="..\:/Users/fritz/Android/ParkingService/app/src/main/res/layout/fragment_ticket_history.xml" value="0.10739614994934144" />
         <entry key="..\:/Users/fritz/Android/ParkingService/app/src/main/res/layout/fragment_user.xml" value="0.176" />
         <entry key="..\:/Users/fritz/Android/ParkingService/app/src/main/res/menu/drawer_menu.xml" value="0.25416666666666665" />
         <entry key="..\:/Users/fritz/Android/ParkingService/app/src/main/res/xml/preferences.xml" value="0.17798913043478262" />
